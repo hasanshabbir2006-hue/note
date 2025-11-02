@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Note</title>
+    <!-- Load Tailwind CSS for layout and utilities -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Google Font for handwriting -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&display=swap" rel="stylesheet">
+
+    <style>
+        /* Custom styles for the handwritten paper effect */
+        body {
+            /* A soft, creamy background, like a desk */
+            background-color: #f4f0f8; /* SOFT PURPLE */ 
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Hide overflow for animations */
+        }
+
+        /* The "paper" element */
+        .paper {
+            /* Paper is white */
+            background-color: #fdfcff; /* SOFT PURPLE-WHITE */ 
+            
+            /* Ruled lines */
+            background-image: 
+                repeating-linear-gradient(
+                    to bottom,
+                    transparent,
+                    transparent 29px,
+                    #e0d8f0 29px, /* Classic light purple line */
+                    #e0d8f0 30px
+                );
+            background-size: 100% 30px; /* Line size */
+
+            /* Realistic shadow and slight rotation */
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            border: 1px solid #ddd;
+            
+            /* Softer corners */
+            border-radius: 3px; 
+            /* Subtle float animation */
+            animation: gentleFloat 15s infinite ease-in-out;
+            
+            padding-left: 3.5rem;
+            padding-right: 2.5rem; /* Added right-side padding */
+            position: relative;
+            /* Classic red "margin" line on the left */
+            border-left: 2px solid #c0a0f0; /* SOFT PURPLE MARGIN */
+        }
+
+        /* Pseudo-element for realistic texture overlay */
+        .paper::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* The noise texture */
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+            background-size: 2px 2px, 2px 2px;
+            opacity: 0.8;
+            pointer-events: none; /* Let clicks pass through */
+            border-radius: 3px; /* Match parent */
+            z-index: 1; /* Place it above paper bg but below text */
+        }
+
+
+        /* The handwriting style */
+        .handwriting {
+            font-family: 'Caveat', cursive;
+            font-size: 24px; /* Font size */
+            line-height: 30px; /* IMPORTANT: Matches the gradient line spacing */
+            color: #581c87; /* Dark purple "ink" color */
+            padding-top: 40px; /* Start text below the first line */
+            padding-bottom: 30px;
+            /* Add subtle text shadow for "bleed" */
+            text-shadow: 0px 0px 1px rgba(0, 68, 136, 0.2);
+            position: relative; /* Ensure text is above texture */
+            z-index: 2;
+        }
+
+        /* Blinking cursor for typing effect */
+        .handwriting .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 25px; /* Adjust to match font */
+            background-color: #581c87; /* Match ink color */
+            animation: blink 0.7s infinite;
+            margin-left: 2px;
+            /* Align with the text */
+            transform: translateY(4px);
+            z-index: 2;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Subtle paper movement */
+        @keyframes gentleFloat {
+            0%, 100% {
+                transform: rotate(-0.5deg) translateY(0px);
+            }
+            50% {
+                transform: rotate(-0.4deg) translateY(-2px);
+            }
+        }
+
+        /* Loader screen */
+        #loader {
+            transition: opacity 1s ease-out;
+            background-color: #f4f0f8; /* Match body background */
+        }
+        #loader-text {
+            color: #5a4a3a; /* Softer text color for loader */
+        }
+        #countdown {
+             color: #3d3024;
+        }
+
+        /* Main content, hidden by default */
+        #main-content {
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+
+        /* Side animations (subtle dust motes) */
+        .orb { /* Renamed from .mote */
+            position: fixed; /* Fixed so they float over everything */
+            border-radius: 50%;
+            opacity: 0;
+            animation: drift 20s infinite linear; /* Slower */
+            background-color: #ffffff;
+            filter: blur(4px); /* A bit more blur for glow */
+            z-index: 10;
+        }
+
+        /* Animation definition for drifting motes */
+        @keyframes drift {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6; /* Fainter */
+            }
+            90% {
+                opacity: 0.6; /* Fainter */
+            }
+            100% {
+                /* Drift up and horizontally */
+                transform: translateY(-100vh) translateX(var(--drift-x, 0));
+                opacity: 0; /* Fade out */
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Loader / Countdown Screen -->
+    <div id="loader" class="absolute inset-0 flex flex-col items-center justify-center z-50">
+        <div id="loader-text" class="text-4xl font-bold mb-4">Just a moment...</div>
+        <div id="countdown" class="text-7xl font-bold">30</div>
+    </div>
+
+    <!-- Main Content (Hidden Initially) -->
+    <!-- Container for motes -->
+    <div id="orb-container" class="absolute inset-0 overflow-hidden"></div>
+    
+    <div id="main-content" class="relative w-full">
+        <!-- The Paper -->
+        <main class="paper w-11/12 max-w-2xl mx-auto my-12 min-h-[70vh]">
+            <!-- The text will be "typed" into these empty p tags -->
+            <div class="handwriting">
+                <p class="mb-4"></p>
+                <p class="mb-4"></p>
+                <p class="mb-4"></p>
+                <p class="mb-4"></p>
+                <p class="mb-4"></p>
+                <p class="mt-8"></p>
+                <p></p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Elements ---
+        const loader = document.getElementById('loader');
+        const mainContent = document.getElementById('main-content');
+        const countdownEl = document.getElementById('countdown');
+        const handwritingEl = document.querySelector('.handwriting');
+        const paragraphs = Array.from(handwritingEl.querySelectorAll('p'));
+        
+        // --- Content to be "written" ---
+        const originalTexts = [
+            "My Dearest,",
+            "I wanted to take a quiet moment, just you and me, to write this down. The world can be so loud, but in this space, it's just my words, hoping to reach your heart.",
+            "Happy Birthday.",
+            "It feels too simple to just say, because it's not just a day. It's a celebration of you—of the light you bring, the laughs you share, and the quiet ways you make everything better just by being in it.",
+            "May your day be as bright as your smile, and may the year ahead be filled with all the little joys and big dreams you deserve. You are so wonderfully, incredibly you, and I'm so grateful for every moment.",
+            "With all my love,",
+            "Someone who adores you."
+        ];
+
+        // --- Countdown Logic ---
+        let count = 30;
+        const interval = setInterval(() => {
+            count--;
+            countdownEl.textContent = count;
+
+            if (count <= 0) {
+                clearInterval(interval);
+                
+                // Fade out loader
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 1000); // Match transition duration
+
+                // Fade in content
+                mainContent.style.opacity = '1';
+                
+                // Start animations and typing
+                startOrbs();
+                startTyping(); // <-- Start the new typing effect
+            }
+        }, 1000); // Update every second
+
+        // --- Real-time Typing Effect ---
+
+        // Helper function for pauses
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Main typing function
+        async function typeWriter(element, text) {
+            // Add blinking cursor
+            const cursor = document.createElement('span');
+            cursor.className = 'typing-cursor';
+            element.appendChild(cursor);
+
+            // Loop through each character
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                
+                // --- REALISM ADDED HERE (WITH SPACE FIX) ---
+                let charSpan;
+                if (char === ' ') {
+                    // Just add a space. Don't wrap it in a span.
+                    // This fixes the missing space issue.
+                    charSpan = ' ';
+                } else {
+                    // Add random vertical jiggle and slight rotation for other chars
+                    const yOffset = Math.random() * 2 - 1; // -1px to +1px
+                    const rotation = Math.random() * 1 - 0.5; // -0.5deg to +0.5deg
+                    const style = `display: inline-block; transform: translateY(${yOffset.toFixed(2)}px) rotate(${rotation.toFixed(2)}deg);`;
+                    // Wrap character in a span with the style
+                    charSpan = `<span style="${style}">${char}</span>`;
+                }
+                
+                // Insert character/span before the cursor
+                cursor.insertAdjacentHTML('beforebegin', charSpan);
+                // --- END REALISM ---
+
+                // Base speed
+                let pause = Math.random() * 100 + 50; // 50ms - 150ms
+                
+                // Add "hesitation" for punctuation
+                if (char === ',' || char === '.') {
+                    pause += 300; // Longer pause
+                }
+                
+                await wait(pause);
+            }
+            
+            // Remove cursor when finished
+            element.removeChild(cursor);
+        }
+
+        // Function to start the typing sequence
+        async function startTyping() {
+            // "Write" each paragraph one by one
+            for (let i = 0; i < paragraphs.length; i++) {
+                await typeWriter(paragraphs[i], originalTexts[i]);
+                // Pause between paragraphs
+                if (i < paragraphs.length - 1) {
+                    await wait(500);
+                }
+            }
+        }
+
+
+        // --- Side Animation Logic (Floating Dust Motes) ---
+        const orbContainer = document.getElementById('orb-container');
+        const orbColors = ['#e9d5ff', '#c0a0f0', '#ffc6d9', '#f8d0ff']; // Purple/Pink Palette
+
+        function createOrb() {
+            const orb = document.createElement('div');
+            orb.className = 'orb';
+            
+            const size = Math.random() * 10 + 5; // 5px to 15px
+            const color = orbColors[Math.floor(Math.random() * orbColors.length)];
+            
+            orb.style.width = `${size}px`;
+            orb.style.height = `${size}px`;
+            orb.style.backgroundColor = color;
+
+            // Position all over the viewport
+            orb.style.left = `${Math.random() * 100}vw`;
+            orb.style.top = `${Math.random() * 20 + 90}%`; // Start near the bottom
+            orb.style.animationDelay = `${Math.random() * 20}s`; // Stagger animations
+            
+            // Set random horizontal drift for the animation
+            const driftX = (Math.random() - 0.5) * 100; // -50px to 50px
+            orb.style.setProperty('--drift-x', `${driftX}px`);
+            
+            orbContainer.appendChild(orb);
+
+            // Remove mote after animation to prevent buildup
+            setTimeout(() => {
+                orb.remove();
+            }, 20000); // Match animation duration (was 25000)
+        }
+
+        function startOrbs() {
+            // Create a new mote every 1000ms (1 second)
+            setInterval(createOrb, 800); // A bit more frequent
+        }
+
+    </script>
+</body>
+</html>
+
+
