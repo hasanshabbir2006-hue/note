@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Special Birthday Note</title>
     
-    <!-- Handwritten fonts from Google Fonts --><link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Elegant fonts from Google Fonts --><link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <!-- NEW: Added 'Inter' font with weights 400 and 700 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:wght@400;700&family=Dancing+Script:wght@700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     
     <!-- Tone.js for sounds --><script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     
     <style>
         :root {
             --paper-bg: #fffafc;
-            /* New: Animated Bokeh Background Colors */
             --bg-color-1: #4a148c; /* Deep Purple */
             --bg-color-2: #8e24aa; /* Mid Purple */
             --bg-color-3: #ab47bc; /* Lighter Purple */
@@ -22,14 +22,14 @@
             --sig-color: #8e24aa;
             --line-color: #e1bee7;
             --candle-flame-color: #fdd835;
+            /* NEW: Changed to Inter */
+            --elegant-font: 'Inter', sans-serif; /* New professional font */
         }
 
-        /* Basic setup */
         html, body {
             height: 100%;
             margin: 0;
             font-family: 'Caveat', cursive;
-            /* NEW: Animated Bokeh Background */
             background: radial-gradient(at 20% 25%, var(--bg-color-3) 0px, transparent 50%),
                         radial-gradient(at 75% 30%, var(--bg-color-2) 0px, transparent 50%),
                         radial-gradient(at 10% 80%, var(--bg-color-2) 0px, transparent 50%),
@@ -40,7 +40,7 @@
             animation: bokehMove 25s infinite ease-in-out;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            overflow: hidden; /* Still hide body overflow */
+            overflow: hidden;
             position: relative;
         }
 
@@ -50,42 +50,42 @@
             justify-content: center;
             padding: 1.5rem;
             box-sizing: border-box;
-            /* Allow vertical scrolling if paper gets too long on small screens */
             overflow-y: auto; 
         }
         
-        /* 1. NEW: START BUTTON */
+        /* NEW: Start Button - Elegant Rectangle */
         #start-btn {
-            background-color: #fff;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
             color: var(--text-color);
-            font-family: 'Caveat', cursive;
-            font-size: 2rem;
+            font-family: var(--elegant-font); /* Elegant font */
+            font-size: 1.3rem; /* Adjusted for Inter font */
             font-weight: 700;
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
-            border: none;
+            padding: 1rem 3rem; /* More rectangular padding */
+            border-radius: 5px; /* Sharp corners */
+            border: 1px solid rgba(0,0,0,0.1); /* Subtle border */
             cursor: pointer;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             z-index: 2000;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            animation: pulse 2s infinite ease-in-out;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+            animation: elegantPulse 2s infinite ease-in-out; /* New elegant pulse */
         }
         #start-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            background: linear-gradient(135deg, #f0f0f0 0%, #ffffff 100%);
         }
         #start-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.98);
         }
 
-        /* 2. COUNTDOWN OVERLAY */
+        /* Countdown Overlay */
         #countdown-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: var(--bg-color-1); /* Match background */
+            background-color: var(--bg-color-1);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -93,31 +93,37 @@
             z-index: 1000;
             transition: opacity 1s ease-in-out;
             opacity: 1;
-            color: #fff; /* White on the dark bg */
-            /* Hidden by default, shown by JS */
+            color: #fff;
             visibility: hidden;
             opacity: 0;
         }
 
+        /* NEW: Elegant Countdown Timer */
         #countdown-timer {
-            font-size: 10rem;
+            font-family: var(--elegant-font); /* Elegant font */
+            font-size: clamp(6rem, 20vw, 12rem); /* Slightly smaller, more elegant size */
             font-weight: 700;
             animation: throb 1s infinite;
+            line-height: 1;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.4); /* Stronger, elegant glow */
+            letter-spacing: 5px; /* More spaced out */
         }
 
         #countdown-message {
-            font-size: 2rem;
+            font-family: var(--elegant-font); /* Elegant font */
+            font-size: 1.3rem; /* Adjusted for Inter font */
             margin-top: 1rem;
             opacity: 0;
             animation: fadeIn 1s 14s forwards;
+            letter-spacing: 1px;
         }
 
-        /* 3. PAPER STYLING */
+        /* Paper Styling (remains mostly same, uses Caveat) */
         .paper {
             background-color: var(--paper-bg);
             width: 100%;
             max-width: 550px;
-            min-height: 100px; /* Start with a min-height */
+            min-height: 100px;
             padding: 2.5rem 2rem;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
@@ -127,31 +133,22 @@
             transform: rotate(-0.75deg) scale(0.9);
             opacity: 0;
             animation: floatIn 1s ease-out 0.5s forwards;
-
-            /* Ruled lines */
             background-image: 
-                /* NEW: Subtle paper texture */
                 linear-gradient(rgba(0,0,0,0.015) 1px, transparent 1px),
                 repeating-linear-gradient(var(--paper-bg), var(--paper-bg) 2.3rem, var(--line-color) 2.4rem, var(--line-color) 2.4rem);
             background-size: 100% 2.4rem, 100% 2.4rem;
             background-position: 0 1rem;
             position: relative;
             z-index: 10;
-            
-            /* Hidden by default */
             visibility: hidden;
-            
-            /* NEW: Transition for growing height */
             transition: height 0.5s ease-out, min-height 0.5s ease-out;
         }
         
-        /* This container will hold the dynamic <p> tags */
         #note-content {
             display: flex;
             flex-direction: column;
         }
 
-        /* Style for dynamically created <p> tags */
         .paper p {
             margin: 0 0 1.5rem 0;
             min-height: 2.4rem;
@@ -161,14 +158,11 @@
             margin-bottom: 0;
         }
         
-        /* NEW: Text glow for writing */
         .paper p.writing {
-            /* This glow will appear on characters as they are typed */
             text-shadow: 0 0 10px var(--candle-flame-color), 0 0 5px #fff;
             animation: textGlow 1s ease-out;
         }
 
-        /* Candle Flame Cursor */
         .writing-cursor {
             display: inline-block;
             width: 8px;
@@ -183,33 +177,30 @@
             box-shadow: 0 0 5px var(--candle-flame-color), 0 0 10px rgba(253, 216, 53, 0.5);
         }
 
-        /* NEW: Different font for signature */
         .signature {
             font-family: 'Dancing Script', cursive;
             font-weight: 700;
-        }
-        .signature {
             text-align: right;
-            font-size: 2rem; /* Slightly larger */
+            font-size: 2rem;
             margin-top: 2.5rem;
             color: var(--sig-color);
             min-height: 2.7rem;
             position: relative;
         }
         
-        /* NEW: Surprise button styling */
+        /* Surprise button styling */
         #surprise-button {
-            display: block; /* Ensures it takes full width and new line */
+            display: block;
             width: fit-content;
-            margin: 2rem auto 0 auto; /* Center it below the text */
+            margin: 2rem auto 0 auto;
             padding: 0.8rem 1.5rem;
-            background-color: #e91e63; /* Pink color */
+            background-color: #e91e63;
             color: #fff;
-            font-family: 'Caveat', cursive;
-            font-size: 1.8rem;
+            font-family: var(--elegant-font); /* Elegant font */
+            font-size: 1.3rem; /* Adjusted for Inter font */
             font-weight: 700;
             border: none;
-            border-radius: 30px;
+            border-radius: 5px; /* Square corners for elegance */
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             opacity: 0;
@@ -217,7 +208,7 @@
             transition: opacity 0.5s ease-out, transform 0.5s ease-out;
         }
         #surprise-button:hover {
-            transform: translateY(20px) scale(1.05);
+            transform: translateY(20px) scale(1.02);
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
         #surprise-button.visible {
@@ -225,7 +216,7 @@
             transform: translateY(0);
         }
 
-        /* 4. CONFETTI ANIMATION */
+        /* Confetti Container */
         .confetti-container {
             position: fixed;
             top: 0;
@@ -245,7 +236,6 @@
             height: 10px;
             background-color: currentColor;
             top: -10px;
-            /* NEW: Added sway animation */
             animation: confettiFall linear infinite, confettiSway 3s infinite ease-in-out;
             border-radius: 2px;
             transform-origin: center;
@@ -253,7 +243,7 @@
         .confetti.square { border-radius: 0; }
         .confetti.circle { border-radius: 50%; }
 
-        /* 5. SPARKLES (ON PAPER) */
+        /* Sparkles (on paper) */
         .sparkle-container {
             position: absolute;
             top: 0; left: 0;
@@ -272,14 +262,14 @@
             transform: scale(0);
         }
 
-        /* 6. BALLOON ANIMATION */
+        /* Balloon Animation */
         .balloon-container {
             position: fixed;
             bottom: -150px;
-            left: 0; /* Changed for easier click handling */
+            left: 0;
             width: 100%;
-            height: 100vh; /* Cover full height for floating */
-            pointer-events: none; /* Container doesn't block clicks */
+            height: 100vh;
+            pointer-events: none;
             z-index: 20;
             opacity: 0;
             transition: opacity 1s ease-in;
@@ -291,14 +281,13 @@
             height: 90px;
             background: linear-gradient(to bottom, #ff9800, #ff5722);
             border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-            bottom: -150px; /* Start below screen */
+            bottom: -150px;
             animation: balloonFloat 15s ease-out infinite forwards;
             box-shadow: inset -5px -5px 10px rgba(0,0,0,0.2);
-            pointer-events: all; /* Balloons ARE clickable */
+            pointer-events: all;
             cursor: pointer;
             transition: transform 0.2s ease-out, opacity 0.2s ease-out;
         }
-        /* ... balloon styles ... */
         .balloon::before { content: ''; position: absolute; width: 10px; height: 10px; background-color: rgba(0,0,0,0.2); border-radius: 50%; bottom: -5px; left: 50%; transform: translateX(-50%); z-index: -1; }
         .balloon::after { content: ''; position: absolute; width: 2px; height: 60px; background-color: rgba(0,0,0,0.3); bottom: -65px; left: 50%; transform: translateX(-50%); }
         .balloon:nth-child(1) { background: linear-gradient(to bottom, #ff9800, #ff5722); left: 10%; animation-delay: 0s; }
@@ -307,13 +296,12 @@
         .balloon:nth-child(4) { background: linear-gradient(to bottom, #9C27B0, #6A1B9A); left: 30%; animation-delay: 1s; }
         .balloon:nth-child(5) { background: linear-gradient(to bottom, #F44336, #D32F2F); left: 70%; animation-delay: 3s; }
         
-        /* NEW: Balloon pop effect */
         .balloon.popped {
             transform: scale(1.5);
             opacity: 0;
         }
 
-        /* 7. BACKGROUND SPARKLES */
+        /* Background Sparkles */
         .background-sparkle-container {
             position: fixed;
             top: 0;
@@ -336,18 +324,25 @@
             box-shadow: 0 0 5px #fff, 0 0 10px #fff;
         }
         
-        /* 8. KEYFRAME ANIMATIONS */
+        /* Keyframe Animations */
         @keyframes bokehMove {
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
         }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-            50% { transform: scale(1.03); box-shadow: 0 15px 30px rgba(0,0,0,0.25); }
+        /* NEW: Elegant Pulse Animation */
+        @keyframes elegantPulse {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1), 0 0 5px rgba(255,255,255,0.5); 
+            }
+            50% { 
+                transform: scale(1.01); 
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15), 0 0 10px rgba(255,255,255,0.7); 
+            }
         }
         @keyframes throb {
             0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.15); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 0.8; } /* Slightly less aggressive throb */
         }
         @keyframes fadeIn {
             to { opacity: 1; }
@@ -372,7 +367,6 @@
             0% { transform: translateY(-10px) rotateZ(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotateZ(720deg); opacity: 0; }
         }
-        /* NEW: Confetti sway */
         @keyframes confettiSway {
             0%, 100% { transform: translateX(0); }
             50% { transform: translateX(50px); }
@@ -391,10 +385,10 @@
             50% { opacity: 0.8; transform: scale(1); }
         }
 
-        /* 9. RESPONSIVE STYLING */
+        /* Responsive Styling */
         @media (max-width: 600px) {
-            #countdown-timer { font-size: 7rem; }
-            #countdown-message { font-size: 1.5rem; }
+            #countdown-message { font-size: 1.2rem; }
+            #start-btn { font-size: 1.5rem; padding: 0.8rem 2rem; }
             .paper {
                 padding: 2rem 1.5rem;
                 font-size: 1.4rem;
@@ -413,11 +407,11 @@
 </head>
 <body>
 
-    <!-- Start Button --><button id="start-btn">Click to Begin</button>
+    <!-- Start Button --><button id="start-btn">Begin Your Special Message</button>
 
     <!-- Countdown Overlay --><div id="countdown-overlay">
         <span id="countdown-timer">15</span>
-        <span id="countdown-message">Counting down to something special...</span>
+        <span id="countdown-message">The magic is about to unfold...</span>
     </div>
 
     <!-- Background Sparkles --><div class="background-sparkle-container" id="background-sparkle-container"></div>
@@ -427,7 +421,7 @@
     <!-- This is the 'paper' a user would see --><div class="paper" id="note-paper">
         <!-- Sparkle Container (inside paper) --><div class="sparkle-container" id="sparkle-container"></div>
         <!-- Dynamic content holder --><div id="note-content"></div>
-        <!-- NEW: Surprise button here --><button id="surprise-button" style="display: none;">I got something for you! 🎉</button>
+        <!-- NEW: Surprise button here --><button id="surprise-button" style="display: none;">Unwrap Your Surprise! ✨</button>
     </div>
 
     <!-- Balloon Container --><div class="balloon-container" id="balloon-container">
@@ -445,21 +439,21 @@
             const sparkleContainer = document.getElementById('sparkle-container');
             const balloonContainer = document.getElementById('balloon-container');
             const bgSparkleContainer = document.getElementById('background-sparkle-container');
-            const surpriseButton = document.getElementById('surprise-button'); // NEW
+            const surpriseButton = document.getElementById('surprise-button'); 
 
             // --- Audio Synths ---
             let tickSynth, chimeSynth, popSynth;
             let soundStarted = false;
 
-            // --- Birthday-themed Text (NEW: Just text) ---
+            // --- Birthday-themed Text ---
             const lines = [
-                { type: 'p', text: "Dearest [Recipient's Name]," },
-                { type: 'p', text: "It's your special day! I wanted to send you a little note, filled with all the warmest wishes and happiest thoughts." },
-                { type: 'p', text: "I hope your birthday is absolutely magical, brimming with joy, laughter, and everything wonderful that you deserve." },
-                { type: 'p', text: "May this next year be your brightest yet, full of new adventures and beautiful memories." },
-                { type: 'p', text: "Thank you for being such an incredible person." },
-                { type: 'p', text: "Sending you the biggest birthday hug!" },
-                { type: 'sig', text: "With all my love," }
+                { type: 'p', text: "My Dearest [Recipient's Name]," },
+                { type: 'p', text: "On this most wonderful day, I wanted to craft something truly special for you, a little note woven with warmth and joy." },
+                { type: 'p', text: "May your birthday be an exquisite symphony of happiness, abundant laughter, and all the delightful moments you so richly deserve." },
+                { type: 'p', text: "Here's to a year ahead that sparkles brighter than any before, filled with grand adventures and cherished memories." },
+                { type: 'p', text: "Thank you for gracing my life with your extraordinary presence." },
+                { type: 'p', text: "With deepest affection and the warmest wishes," },
+                { type: 'sig', text: "Your Admirer" }
             ];
             const writingSpeed = 70;
             
@@ -536,7 +530,7 @@
                 }, 1000);
             }
 
-            // --- 4. Writing Animation (NEW: Dynamic <p> creation) ---
+            // --- 4. Writing Animation ---
             function typeLine(line) {
                 return new Promise((resolve) => {
                     const el = document.createElement(line.type === 'sig' ? 'div' : 'p');
@@ -583,13 +577,11 @@
                 balloonContainer.style.opacity = '1';
                 createBalloons(5);
 
-                // NEW: Show the surprise button
                 surpriseButton.style.display = 'block';
                 setTimeout(() => {
                     surpriseButton.classList.add('visible');
-                }, 500); // Small delay after last line
+                }, 500);
                 
-                // NEW: Add event listener to the surprise button
                 surpriseButton.addEventListener('click', () => {
                     window.location.href = 'https://hey-happy-birthday-omega.vercel.app';
                 });
@@ -650,8 +642,8 @@
                     balloon.className = 'balloon';
                     const color = colors[i % colors.length];
                     balloon.style.background = `linear-gradient(to bottom, ${color[0]}, ${color[1]})`;
-                    balloon.style.left = (Math.random() * 70 + 15) + '%'; // 15% to 85%
-                    balloon.style.animationDuration = (Math.random() * 5 + 10) + 's'; // 10-15s
+                    balloon.style.left = (Math.random() * 70 + 15) + '%';
+                    balloon.style.animationDuration = (Math.random() * 5 + 10) + 's';
                     balloon.style.animationDelay = (Math.random() * 2) + 's';
                     
                     balloon.addEventListener('click', () => {
@@ -670,4 +662,5 @@
 
 </body>
 </html>
+
 
