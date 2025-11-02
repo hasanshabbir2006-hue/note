@@ -3,341 +3,671 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Special Note</title>
-    <!-- Load Tailwind CSS for layout and utilities -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Google Font for handwriting -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <title>A Special Birthday Note</title>
+    
+    <!-- Handwritten fonts from Google Fonts --><link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- Tone.js for sounds --><script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    
     <style>
-        /* Custom styles for the handwritten paper effect */
-        body {
-            /* A soft, creamy background, like a desk */
-            background-color: #f4f0f8; /* SOFT PURPLE */ 
-            font-family: 'Inter', sans-serif;
-            overflow: hidden; /* Hide overflow for animations */
+        :root {
+            --paper-bg: #fffafc;
+            /* New: Animated Bokeh Background Colors */
+            --bg-color-1: #4a148c; /* Deep Purple */
+            --bg-color-2: #8e24aa; /* Mid Purple */
+            --bg-color-3: #ab47bc; /* Lighter Purple */
+            --text-color: #5e35b1;
+            --sig-color: #8e24aa;
+            --line-color: #e1bee7;
+            --candle-flame-color: #fdd835;
         }
 
-        /* The "paper" element */
-        .paper {
-            /* Paper is white */
-            background-color: #fdfcff; /* SOFT PURPLE-WHITE */ 
-            
-            /* Ruled lines */
-            background-image: 
-                repeating-linear-gradient(
-                    to bottom,
-                    transparent,
-                    transparent 29px,
-                    #e0d8f0 29px, /* Classic light purple line */
-                    #e0d8f0 30px
-                );
-            background-size: 100% 30px; /* Line size */
-
-            /* Realistic shadow and slight rotation */
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-            border: 1px solid #ddd;
-            
-            /* Softer corners */
-            border-radius: 3px; 
-            /* Subtle float animation */
-            animation: gentleFloat 15s infinite ease-in-out;
-            
-            padding-left: 3.5rem;
-            padding-right: 2.5rem; /* Added right-side padding */
+        /* Basic setup */
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Caveat', cursive;
+            /* NEW: Animated Bokeh Background */
+            background: radial-gradient(at 20% 25%, var(--bg-color-3) 0px, transparent 50%),
+                        radial-gradient(at 75% 30%, var(--bg-color-2) 0px, transparent 50%),
+                        radial-gradient(at 10% 80%, var(--bg-color-2) 0px, transparent 50%),
+                        radial-gradient(at 80% 85%, var(--bg-color-3) 0px, transparent 50%),
+                        radial-gradient(at 50% 50%, var(--bg-color-1) 0px, transparent 50%);
+            background-color: var(--bg-color-1);
+            background-size: 200% 200%;
+            animation: bokehMove 25s infinite ease-in-out;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow: hidden; /* Still hide body overflow */
             position: relative;
-            /* Classic red "margin" line on the left */
-            border-left: 2px solid #c0a0f0; /* SOFT PURPLE MARGIN */
         }
 
-        /* Pseudo-element for realistic texture overlay */
-        .paper::before {
-            content: "";
-            position: absolute;
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            /* Allow vertical scrolling if paper gets too long on small screens */
+            overflow-y: auto; 
+        }
+        
+        /* 1. NEW: START BUTTON */
+        #start-btn {
+            background-color: #fff;
+            color: var(--text-color);
+            font-family: 'Caveat', cursive;
+            font-size: 2rem;
+            font-weight: 700;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 2000;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: pulse 2s infinite ease-in-out;
+        }
+        #start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+        }
+        #start-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 2. COUNTDOWN OVERLAY */
+        #countdown-overlay {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            /* The noise texture */
+            background-color: var(--bg-color-1); /* Match background */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 1s ease-in-out;
+            opacity: 1;
+            color: #fff; /* White on the dark bg */
+            /* Hidden by default, shown by JS */
+            visibility: hidden;
+            opacity: 0;
+        }
+
+        #countdown-timer {
+            font-size: 10rem;
+            font-weight: 700;
+            animation: throb 1s infinite;
+        }
+
+        #countdown-message {
+            font-size: 2rem;
+            margin-top: 1rem;
+            opacity: 0;
+            animation: fadeIn 1s 14s forwards;
+        }
+
+        /* 3. PAPER STYLING */
+        .paper {
+            background-color: var(--paper-bg);
+            width: 100%;
+            max-width: 550px;
+            min-height: 100px; /* Start with a min-height */
+            padding: 2.5rem 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 1.65rem;
+            line-height: 2.4rem;
+            transform: rotate(-0.75deg) scale(0.9);
+            opacity: 0;
+            animation: floatIn 1s ease-out 0.5s forwards;
+
+            /* Ruled lines */
             background-image: 
-                linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
-            background-size: 2px 2px, 2px 2px;
-            opacity: 0.8;
-            pointer-events: none; /* Let clicks pass through */
-            border-radius: 3px; /* Match parent */
-            z-index: 1; /* Place it above paper bg but below text */
+                /* NEW: Subtle paper texture */
+                linear-gradient(rgba(0,0,0,0.015) 1px, transparent 1px),
+                repeating-linear-gradient(var(--paper-bg), var(--paper-bg) 2.3rem, var(--line-color) 2.4rem, var(--line-color) 2.4rem);
+            background-size: 100% 2.4rem, 100% 2.4rem;
+            background-position: 0 1rem;
+            position: relative;
+            z-index: 10;
+            
+            /* Hidden by default */
+            visibility: hidden;
+            
+            /* NEW: Transition for growing height */
+            transition: height 0.5s ease-out, min-height 0.5s ease-out;
+        }
+        
+        /* This container will hold the dynamic <p> tags */
+        #note-content {
+            display: flex;
+            flex-direction: column;
         }
 
-
-        /* The handwriting style */
-        .handwriting {
-            font-family: 'Caveat', cursive;
-            font-size: 24px; /* Font size */
-            line-height: 30px; /* IMPORTANT: Matches the gradient line spacing */
-            color: #581c87; /* Dark purple "ink" color */
-            padding-top: 40px; /* Start text below the first line */
-            padding-bottom: 30px;
-            /* Add subtle text shadow for "bleed" */
-            text-shadow: 0px 0px 1px rgba(0, 68, 136, 0.2);
-            position: relative; /* Ensure text is above texture */
-            z-index: 2;
+        /* Style for dynamically created <p> tags */
+        .paper p {
+            margin: 0 0 1.5rem 0;
+            min-height: 2.4rem;
+            position: relative;
+        }
+        .paper p:last-of-type {
+            margin-bottom: 0;
+        }
+        
+        /* NEW: Text glow for writing */
+        .paper p.writing {
+            /* This glow will appear on characters as they are typed */
+            text-shadow: 0 0 10px var(--candle-flame-color), 0 0 5px #fff;
+            animation: textGlow 1s ease-out;
         }
 
-        /* Blinking cursor for typing effect */
-        .handwriting .typing-cursor {
+        /* Candle Flame Cursor */
+        .writing-cursor {
             display: inline-block;
-            width: 2px;
-            height: 25px; /* Adjust to match font */
-            background-color: #581c87; /* Match ink color */
-            animation: blink 0.7s infinite;
-            margin-left: 2px;
-            /* Align with the text */
-            transform: translateY(4px);
-            z-index: 2;
+            width: 8px;
+            height: 16px;
+            background-color: var(--candle-flame-color);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+            top: 2px;
+            left: 3px;
+            transform: rotate(-5deg);
+            animation: flicker 0.2s infinite alternate, glow 1s infinite alternate;
+            box-shadow: 0 0 5px var(--candle-flame-color), 0 0 10px rgba(253, 216, 53, 0.5);
         }
 
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+        /* NEW: Different font for signature */
+        .signature {
+            font-family: 'Dancing Script', cursive;
+            font-weight: 700;
+        }
+        .signature {
+            text-align: right;
+            font-size: 2rem; /* Slightly larger */
+            margin-top: 2.5rem;
+            color: var(--sig-color);
+            min-height: 2.7rem;
+            position: relative;
+        }
+        
+        /* NEW: Surprise button styling */
+        #surprise-button {
+            display: block; /* Ensures it takes full width and new line */
+            width: fit-content;
+            margin: 2rem auto 0 auto; /* Center it below the text */
+            padding: 0.8rem 1.5rem;
+            background-color: #e91e63; /* Pink color */
+            color: #fff;
+            font-family: 'Caveat', cursive;
+            font-size: 1.8rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        #surprise-button:hover {
+            transform: translateY(20px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        #surprise-button.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        /* Subtle paper movement */
-        @keyframes gentleFloat {
-            0%, 100% {
-                transform: rotate(-0.5deg) translateY(0px);
-            }
-            50% {
-                transform: rotate(-0.4deg) translateY(-2px);
-            }
-        }
-
-        /* Loader screen */
-        #loader {
-            transition: opacity 1s ease-out;
-            background-color: #f4f0f8; /* Match body background */
-        }
-        #loader-text {
-            color: #5a4a3a; /* Softer text color for loader */
-        }
-        #countdown {
-             color: #3d3024;
-        }
-
-        /* Main content, hidden by default */
-        #main-content {
+        /* 4. CONFETTI ANIMATION */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 50;
             opacity: 0;
             transition: opacity 1s ease-in;
         }
 
-        /* Side animations (subtle dust motes) */
-        .orb { /* Renamed from .mote */
-            position: fixed; /* Fixed so they float over everything */
-            border-radius: 50%;
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: currentColor;
+            top: -10px;
+            /* NEW: Added sway animation */
+            animation: confettiFall linear infinite, confettiSway 3s infinite ease-in-out;
+            border-radius: 2px;
+            transform-origin: center;
+        }
+        .confetti.square { border-radius: 0; }
+        .confetti.circle { border-radius: 50%; }
+
+        /* 5. SPARKLES (ON PAPER) */
+        .sparkle-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .sparkle {
+            position: absolute;
+            background: radial-gradient(circle at center, #fff 0%, transparent 70%);
+            width: 10px;
+            height: 10px;
             opacity: 0;
-            animation: drift 20s infinite linear; /* Slower */
-            background-color: #ffffff;
-            filter: blur(4px); /* A bit more blur for glow */
-            z-index: 10;
+            animation: sparkleTwinkle 2s infinite ease-out;
+            transform: scale(0);
         }
 
-        /* Animation definition for drifting motes */
-        @keyframes drift {
-            0% {
-                transform: translateY(0) translateX(0);
-                opacity: 0;
+        /* 6. BALLOON ANIMATION */
+        .balloon-container {
+            position: fixed;
+            bottom: -150px;
+            left: 0; /* Changed for easier click handling */
+            width: 100%;
+            height: 100vh; /* Cover full height for floating */
+            pointer-events: none; /* Container doesn't block clicks */
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+
+        .balloon {
+            position: absolute;
+            width: 70px;
+            height: 90px;
+            background: linear-gradient(to bottom, #ff9800, #ff5722);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            bottom: -150px; /* Start below screen */
+            animation: balloonFloat 15s ease-out infinite forwards;
+            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.2);
+            pointer-events: all; /* Balloons ARE clickable */
+            cursor: pointer;
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+        }
+        /* ... balloon styles ... */
+        .balloon::before { content: ''; position: absolute; width: 10px; height: 10px; background-color: rgba(0,0,0,0.2); border-radius: 50%; bottom: -5px; left: 50%; transform: translateX(-50%); z-index: -1; }
+        .balloon::after { content: ''; position: absolute; width: 2px; height: 60px; background-color: rgba(0,0,0,0.3); bottom: -65px; left: 50%; transform: translateX(-50%); }
+        .balloon:nth-child(1) { background: linear-gradient(to bottom, #ff9800, #ff5722); left: 10%; animation-delay: 0s; }
+        .balloon:nth-child(2) { background: linear-gradient(to bottom, #4CAF50, #2E7D32); left: 20%; animation-delay: 2s; }
+        .balloon:nth-child(3) { background: linear-gradient(to bottom, #2196F3, #1976D2); left: 80%; animation-delay: 4s; }
+        .balloon:nth-child(4) { background: linear-gradient(to bottom, #9C27B0, #6A1B9A); left: 30%; animation-delay: 1s; }
+        .balloon:nth-child(5) { background: linear-gradient(to bottom, #F44336, #D32F2F); left: 70%; animation-delay: 3s; }
+        
+        /* NEW: Balloon pop effect */
+        .balloon.popped {
+            transform: scale(1.5);
+            opacity: 0;
+        }
+
+        /* 7. BACKGROUND SPARKLES */
+        .background-sparkle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+        .bg-sparkle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #ffffff;
+            border-radius: 50%;
+            opacity: 0;
+            animation: bgSparkleFade 4s infinite ease-in-out;
+            box-shadow: 0 0 5px #fff, 0 0 10px #fff;
+        }
+        
+        /* 8. KEYFRAME ANIMATIONS */
+        @keyframes bokehMove {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+            50% { transform: scale(1.03); box-shadow: 0 15px 30px rgba(0,0,0,0.25); }
+        }
+        @keyframes throb {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.15); opacity: 0.7; }
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        @keyframes floatIn {
+            to { opacity: 1; transform: rotate(-0.75deg) scale(1); }
+        }
+        @keyframes textGlow {
+            0% { text-shadow: 0 0 10px var(--candle-flame-color), 0 0 5px #fff; }
+            100% { text-shadow: 0 0 0px transparent, 0 0 0px transparent; }
+        }
+        @keyframes flicker {
+            0% { transform: scaleY(1) rotate(-5deg); }
+            50% { transform: scaleY(0.9) rotate(5deg); }
+            100% { transform: scaleY(1) rotate(-5deg); }
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px var(--candle-flame-color), 0 0 10px rgba(253, 216, 53, 0.5); }
+            50% { box-shadow: 0 0 8px var(--candle-flame-color), 0 0 15px rgba(253, 216, 53, 0.7); }
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(-10px) rotateZ(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotateZ(720deg); opacity: 0; }
+        }
+        /* NEW: Confetti sway */
+        @keyframes confettiSway {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(50px); }
+        }
+        @keyframes sparkleTwinkle {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        @keyframes balloonFloat {
+            0% { bottom: -150px; opacity: 1; }
+            100% { bottom: 100vh; opacity: 1; }
+        }
+        @keyframes bgSparkleFade {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 0.8; transform: scale(1); }
+        }
+
+        /* 9. RESPONSIVE STYLING */
+        @media (max-width: 600px) {
+            #countdown-timer { font-size: 7rem; }
+            #countdown-message { font-size: 1.5rem; }
+            .paper {
+                padding: 2rem 1.5rem;
+                font-size: 1.4rem;
+                line-height: 2.1rem;
+                transform: rotate(0deg) scale(0.9);
+                background-size: 100% 2.1rem, 100% 2.1rem;
+                background-position: 0 1.2rem;
             }
-            10% {
-                opacity: 0.6; /* Fainter */
-            }
-            90% {
-                opacity: 0.6; /* Fainter */
-            }
-            100% {
-                /* Drift up and horizontally */
-                transform: translateY(-100vh) translateX(var(--drift-x, 0));
-                opacity: 0; /* Fade out */
-            }
+            @keyframes floatIn { to { opacity: 1; transform: rotate(0deg) scale(1); } }
+            .paper p { min-height: 2.1rem; }
+            .signature { font-size: 1.8rem; min-height: 2.4rem; }
+            #surprise-button { font-size: 1.5rem; padding: 0.7rem 1.2rem; }
+            .balloon { width: 50px; height: 70px; }
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body>
 
-    <!-- Loader / Countdown Screen -->
-    <div id="loader" class="absolute inset-0 flex flex-col items-center justify-center z-50">
-        <div id="loader-text" class="text-4xl font-bold mb-4">Just a moment...</div>
-        <div id="countdown" class="text-7xl font-bold">30</div>
+    <!-- Start Button --><button id="start-btn">Click to Begin</button>
+
+    <!-- Countdown Overlay --><div id="countdown-overlay">
+        <span id="countdown-timer">15</span>
+        <span id="countdown-message">Counting down to something special...</span>
     </div>
 
-    <!-- Main Content (Hidden Initially) -->
-    <!-- Container for motes -->
-    <div id="orb-container" class="absolute inset-0 overflow-hidden"></div>
-    
-    <div id="main-content" class="relative w-full">
-        <!-- The Paper -->
-        <main class="paper w-11/12 max-w-2xl mx-auto my-12 min-h-[70vh]">
-            <!-- The text will be "typed" into these empty p tags -->
-            <div class="handwriting">
-                <p class="mb-4"></p>
-                <p class="mb-4"></p>
-                <p class="mb-4"></p>
-                <p class="mb-4"></p>
-                <p class="mb-4"></p>
-                <p class="mt-8"></p>
-                <p></p>
-            </div>
-        </main>
+    <!-- Background Sparkles --><div class="background-sparkle-container" id="background-sparkle-container"></div>
+
+    <!-- Confetti Container --><div class="confetti-container" id="confetti-container"></div>
+
+    <!-- This is the 'paper' a user would see --><div class="paper" id="note-paper">
+        <!-- Sparkle Container (inside paper) --><div class="sparkle-container" id="sparkle-container"></div>
+        <!-- Dynamic content holder --><div id="note-content"></div>
+        <!-- NEW: Surprise button here --><button id="surprise-button" style="display: none;">I got something for you! 🎉</button>
     </div>
+
+    <!-- Balloon Container --><div class="balloon-container" id="balloon-container">
+        <!-- Balloons will be added by JS --></div>
 
     <script>
-        // --- Elements ---
-        const loader = document.getElementById('loader');
-        const mainContent = document.getElementById('main-content');
-        const countdownEl = document.getElementById('countdown');
-        const handwritingEl = document.querySelector('.handwriting');
-        const paragraphs = Array.from(handwritingEl.querySelectorAll('p'));
-        
-        // --- Content to be "written" ---
-        const originalTexts = [
-            "My Dearest,",
-            "I wanted to take a quiet moment, just you and me, to write this down. The world can be so loud, but in this space, it's just my words, hoping to reach your heart.",
-            "Happy Birthday.",
-            "It feels too simple to just say, because it's not just a day. It's a celebration of you—of the light you bring, the laughs you share, and the quiet ways you make everything better just by being in it.",
-            "May your day be as bright as your smile, and may the year ahead be filled with all the little joys and big dreams you deserve. You are so wonderfully, incredibly you, and I'm so grateful for every moment.",
-            "With all my love,",
-            "Someone who adores you."
-        ];
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Element References ---
+            const startBtn = document.getElementById('start-btn');
+            const timerEl = document.getElementById('countdown-timer');
+            const overlayEl = document.getElementById('countdown-overlay');
+            const paperEl = document.getElementById('note-paper');
+            const noteContent = document.getElementById('note-content'); 
+            const confettiContainer = document.getElementById('confetti-container');
+            const sparkleContainer = document.getElementById('sparkle-container');
+            const balloonContainer = document.getElementById('balloon-container');
+            const bgSparkleContainer = document.getElementById('background-sparkle-container');
+            const surpriseButton = document.getElementById('surprise-button'); // NEW
 
-        // --- Countdown Logic ---
-        let count = 30;
-        const interval = setInterval(() => {
-            count--;
-            countdownEl.textContent = count;
+            // --- Audio Synths ---
+            let tickSynth, chimeSynth, popSynth;
+            let soundStarted = false;
 
-            if (count <= 0) {
-                clearInterval(interval);
+            // --- Birthday-themed Text (NEW: Just text) ---
+            const lines = [
+                { type: 'p', text: "Dearest [Recipient's Name]," },
+                { type: 'p', text: "It's your special day! I wanted to send you a little note, filled with all the warmest wishes and happiest thoughts." },
+                { type: 'p', text: "I hope your birthday is absolutely magical, brimming with joy, laughter, and everything wonderful that you deserve." },
+                { type: 'p', text: "May this next year be your brightest yet, full of new adventures and beautiful memories." },
+                { type: 'p', text: "Thank you for being such an incredible person." },
+                { type: 'p', text: "Sending you the biggest birthday hug!" },
+                { type: 'sig', text: "With all my love," }
+            ];
+            const writingSpeed = 70;
+            
+            // --- 1. Start Experience ---
+            startBtn.addEventListener('click', () => {
+                startBtn.style.transition = 'opacity 0.5s, transform 0.5s';
+                startBtn.style.opacity = '0';
+                startBtn.style.transform = 'scale(0.5)';
                 
-                // Fade out loader
-                loader.style.opacity = '0';
+                startSound(); // Start audio context on user interaction
+                
                 setTimeout(() => {
-                    loader.style.display = 'none';
-                }, 1000); // Match transition duration
+                    startBtn.style.display = 'none';
+                    overlayEl.style.visibility = 'visible';
+                    overlayEl.style.opacity = '1';
+                    startCountdown();
+                }, 500);
+            });
 
-                // Fade in content
-                mainContent.style.opacity = '1';
+            // --- 2. Initialize Sounds ---
+            async function startSound() {
+                if (soundStarted) return;
+                await Tone.start();
                 
-                // Start animations and typing
-                startOrbs();
-                startTyping(); // <-- Start the new typing effect
-            }
-        }, 1000); // Update every second
-
-        // --- Real-time Typing Effect ---
-
-        // Helper function for pauses
-        function wait(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // Main typing function
-        async function typeWriter(element, text) {
-            // Add blinking cursor
-            const cursor = document.createElement('span');
-            cursor.className = 'typing-cursor';
-            element.appendChild(cursor);
-
-            // Loop through each character
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
+                tickSynth = new Tone.MembraneSynth().toDestination();
+                tickSynth.volume.value = -15;
                 
-                // --- REALISM ADDED HERE (WITH SPACE FIX) ---
-                let charSpan;
-                if (char === ' ') {
-                    // Just add a space. Don't wrap it in a span.
-                    // This fixes the missing space issue.
-                    charSpan = ' ';
-                } else {
-                    // Add random vertical jiggle and slight rotation for other chars
-                    const yOffset = Math.random() * 2 - 1; // -1px to +1px
-                    const rotation = Math.random() * 1 - 0.5; // -0.5deg to +0.5deg
-                    const style = `display: inline-block; transform: translateY(${yOffset.toFixed(2)}px) rotate(${rotation.toFixed(2)}deg);`;
-                    // Wrap character in a span with the style
-                    charSpan = `<span style="${style}">${char}</span>`;
-                }
+                chimeSynth = new Tone.PluckSynth().toDestination();
+                chimeSynth.volume.value = -5;
                 
-                // Insert character/span before the cursor
-                cursor.insertAdjacentHTML('beforebegin', charSpan);
-                // --- END REALISM ---
-
-                // Base speed
-                let pause = Math.random() * 100 + 50; // 50ms - 150ms
+                popSynth = new Tone.NoiseSynth({
+                    noise: { type: 'white' },
+                    envelope: { attack: 0.001, decay: 0.1, sustain: 0 }
+                }).toDestination();
+                popSynth.volume.value = -10;
                 
-                // Add "hesitation" for punctuation
-                if (char === ',' || char === '.') {
-                    pause += 300; // Longer pause
-                }
-                
-                await wait(pause);
+                soundStarted = true;
             }
             
-            // Remove cursor when finished
-            element.removeChild(cursor);
-        }
+            // --- 3. Run Countdown ---
+            function startCountdown() {
+                let count = 15;
+                timerEl.textContent = count;
 
-        // Function to start the typing sequence
-        async function startTyping() {
-            // "Write" each paragraph one by one
-            for (let i = 0; i < paragraphs.length; i++) {
-                await typeWriter(paragraphs[i], originalTexts[i]);
-                // Pause between paragraphs
-                if (i < paragraphs.length - 1) {
-                    await wait(500);
+                const countdownInterval = setInterval(() => {
+                    count--;
+                    timerEl.textContent = count;
+                    
+                    if (soundStarted && count > 0) {
+                        tickSynth.triggerAttackRelease("C5", "32n");
+                    } else if (soundStarted && count === 0) {
+                        chimeSynth.triggerAttackRelease("G5", "8n", Tone.now());
+                        chimeSynth.triggerAttackRelease("C6", "8n", Tone.now() + 0.1);
+                        chimeSynth.triggerAttackRelease("E6", "8n", Tone.now() + 0.2);
+                    }
+                    
+                    if (count <= 0) {
+                        clearInterval(countdownInterval);
+                        overlayEl.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            overlayEl.style.display = 'none';
+                            paperEl.style.visibility = 'visible';
+                            
+                            confettiContainer.style.opacity = '1';
+                            createConfetti(50);
+                            
+                            bgSparkleContainer.style.opacity = '1';
+                            setInterval(createBackgroundSparkle, 700);
+                            
+                            startWriting();
+                        }, 1000);
+                    }
+                }, 1000);
+            }
+
+            // --- 4. Writing Animation (NEW: Dynamic <p> creation) ---
+            function typeLine(line) {
+                return new Promise((resolve) => {
+                    const el = document.createElement(line.type === 'sig' ? 'div' : 'p');
+                    
+                    if (line.type === 'sig') {
+                        el.className = 'signature';
+                    }
+                    
+                    noteContent.appendChild(el);
+                    
+                    let i = 0;
+                    const text = line.text;
+                    const cursor = document.createElement('span');
+                    cursor.className = 'writing-cursor';
+                    el.appendChild(cursor);
+                    el.classList.add('writing');
+                    
+                    const sparkleInterval = setInterval(() => createSparkle(el), writingSpeed * 2);
+
+                    const typeInterval = setInterval(() => {
+                        if (i < text.length) {
+                            el.insertBefore(document.createTextNode(text.charAt(i)), cursor);
+                            i++;
+                        } else {
+                            clearInterval(typeInterval);
+                            clearInterval(sparkleInterval);
+                            el.removeChild(cursor);
+                            el.classList.remove('writing');
+                            resolve();
+                        }
+                    }, writingSpeed);
+                });
+            }
+
+            async function startWriting() {
+                await new Promise(res => setTimeout(res, 1500)); 
+
+                for (const line of lines) {
+                    await typeLine(line);
+                    const pause = line.type === 'sig' ? 800 : 500;
+                    await new Promise(res => setTimeout(res, pause)); 
+                }
+                
+                balloonContainer.style.opacity = '1';
+                createBalloons(5);
+
+                // NEW: Show the surprise button
+                surpriseButton.style.display = 'block';
+                setTimeout(() => {
+                    surpriseButton.classList.add('visible');
+                }, 500); // Small delay after last line
+                
+                // NEW: Add event listener to the surprise button
+                surpriseButton.addEventListener('click', () => {
+                    window.location.href = 'https://hey-happy-birthday-omega.vercel.app';
+                });
+            }
+
+            // --- 5. Create Effects ---
+            const confettiColors = ['#e91e63', '#9c27b0', '#2196f3', '#4caf50', '#ffeb3b', '#ff9800'];
+            function createConfetti(num) {
+                for (let i = 0; i < num; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti ' + (Math.random() > 0.5 ? 'square' : 'circle');
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.animationDuration = (Math.random() * 3 + 5) + 's';
+                    confetti.style.animationDelay = (Math.random() * 5) + 's';
+                    confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                    confetti.style.opacity = Math.random() * 0.7 + 0.3;
+                    confettiContainer.appendChild(confetti);
                 }
             }
-        }
 
+            function createSparkle(targetElement) {
+                if (!sparkleContainer || !targetElement) return;
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                const rect = targetElement.getBoundingClientRect();
+                const paperRect = paperEl.getBoundingClientRect();
+                const randomX = Math.random() * rect.width;
+                const randomY = Math.random() * rect.height;
+                sparkle.style.left = (rect.left - paperRect.left + randomX) + 'px';
+                sparkle.style.top = (rect.top - paperRect.top + randomY) + 'px';
+                sparkle.style.animationDelay = (Math.random() * 0.5) + 's';
+                sparkleContainer.appendChild(sparkle);
+                sparkle.addEventListener('animationend', () => sparkle.remove());
+            }
 
-        // --- Side Animation Logic (Floating Dust Motes) ---
-        const orbContainer = document.getElementById('orb-container');
-        const orbColors = ['#e9d5ff', '#c0a0f0', '#ffc6d9', '#f8d0ff']; // Purple/Pink Palette
-
-        function createOrb() {
-            const orb = document.createElement('div');
-            orb.className = 'orb';
+            function createBackgroundSparkle() {
+                if (!bgSparkleContainer) return;
+                const sparkle = document.createElement('div');
+                sparkle.className = 'bg-sparkle';
+                sparkle.style.left = Math.random() * 100 + 'vw';
+                sparkle.style.top = Math.random() * 100 + 'vh';
+                sparkle.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                sparkle.style.animationDelay = (Math.random() * 2) + 's';
+                bgSparkleContainer.appendChild(sparkle);
+                sparkle.addEventListener('animationend', () => sparkle.remove());
+            }
             
-            const size = Math.random() * 10 + 5; // 5px to 15px
-            const color = orbColors[Math.floor(Math.random() * orbColors.length)];
-            
-            orb.style.width = `${size}px`;
-            orb.style.height = `${size}px`;
-            orb.style.backgroundColor = color;
-
-            // Position all over the viewport
-            orb.style.left = `${Math.random() * 100}vw`;
-            orb.style.top = `${Math.random() * 20 + 90}%`; // Start near the bottom
-            orb.style.animationDelay = `${Math.random() * 20}s`; // Stagger animations
-            
-            // Set random horizontal drift for the animation
-            const driftX = (Math.random() - 0.5) * 100; // -50px to 50px
-            orb.style.setProperty('--drift-x', `${driftX}px`);
-            
-            orbContainer.appendChild(orb);
-
-            // Remove mote after animation to prevent buildup
-            setTimeout(() => {
-                orb.remove();
-            }, 20000); // Match animation duration (was 25000)
-        }
-
-        function startOrbs() {
-            // Create a new mote every 1000ms (1 second)
-            setInterval(createOrb, 800); // A bit more frequent
-        }
-
+            function createBalloons(num) {
+                const colors = [
+                    ['#ff9800', '#ff5722'], // Orange
+                    ['#4CAF50', '#2E7D32'], // Green
+                    ['#2196F3', '#1976D2'], // Blue
+                    ['#9C27B0', '#6A1B9A'], // Purple
+                    ['#F44336', '#D32F2F']  // Red
+                ];
+                for (let i = 0; i < num; i++) {
+                    const balloon = document.createElement('div');
+                    balloon.className = 'balloon';
+                    const color = colors[i % colors.length];
+                    balloon.style.background = `linear-gradient(to bottom, ${color[0]}, ${color[1]})`;
+                    balloon.style.left = (Math.random() * 70 + 15) + '%'; // 15% to 85%
+                    balloon.style.animationDuration = (Math.random() * 5 + 10) + 's'; // 10-15s
+                    balloon.style.animationDelay = (Math.random() * 2) + 's';
+                    
+                    balloon.addEventListener('click', () => {
+                        if (soundStarted) {
+                            popSynth.triggerAttackRelease("8n");
+                        }
+                        balloon.classList.add('popped');
+                        setTimeout(() => balloon.remove(), 200);
+                    });
+                    
+                    balloonContainer.appendChild(balloon);
+                }
+            }
+        });
     </script>
+
 </body>
 </html>
-
 
